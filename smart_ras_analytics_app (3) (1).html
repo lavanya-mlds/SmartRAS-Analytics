@@ -1,0 +1,428 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #1565C0; --blue-light: #1976D2; --blue-pale: #E3F2FD;
+    --green: #2E7D32; --green-light: #43A047; --green-pale: #E8F5E9;
+    --teal: #00695C; --teal-pale: #E0F2F1;
+    --text: #1a1a1a; --text2: #555; --border: #ddd;
+    --bg: #f4f7fb; --white: #fff;
+    --radius: 12px; --radiusSm: 8px;
+  }
+  body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .page { display: none; padding: 0; animation: fadeIn 0.25s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .app-header {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+    color: white; padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .app-header .logo { font-size: 18px; font-weight: 600; letter-spacing: 0.3px; }
+  .app-header .logo span { font-size: 12px; display: block; opacity: 0.8; font-weight: 400; }
+  .logout-btn {
+    background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.4);
+    color: white; padding: 7px 16px; border-radius: var(--radiusSm);
+    font-size: 14px; cursor: pointer; font-weight: 500;
+  }
+  .logout-btn:hover { background: rgba(255,255,255,0.28); }
+
+  .nav-bar {
+    display: flex; background: var(--white);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto; position: sticky; top: 64px; z-index: 90;
+  }
+  .nav-btn {
+    flex: 1; min-width: 70px; padding: 12px 4px; border: none;
+    background: none; cursor: pointer; font-size: 11px; color: var(--text2);
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    border-bottom: 3px solid transparent; transition: all 0.18s;
+  }
+  .nav-btn .icon { font-size: 20px; }
+  .nav-btn.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
+  .nav-btn:hover { background: var(--blue-pale); }
+
+  .content { padding: 16px; max-width: 480px; margin: 0 auto; }
+
+  .auth-wrap { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: var(--bg); }
+  .auth-card {
+    background: var(--white); border-radius: 16px;
+    border: 1px solid var(--border); padding: 28px 24px;
+    margin: 16px; box-shadow: 0 2px 16px rgba(21,101,192,0.07);
+  }
+  .auth-logo {
+    text-align: center; margin-bottom: 24px;
+  }
+  .auth-logo .logo-icon {
+    width: 60px; height: 60px; background: linear-gradient(135deg, var(--blue), var(--teal));
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px; font-size: 28px;
+  }
+  .auth-logo h1 { font-size: 20px; font-weight: 700; color: var(--blue); }
+  .auth-logo p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 13px 14px; border: 1.5px solid var(--border);
+    border-radius: var(--radiusSm); font-size: 16px; color: var(--text);
+    background: var(--white); outline: none; transition: border 0.18s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--blue); box-shadow: 0 0 0 3px rgba(21,101,192,0.1);
+  }
+  .form-group textarea { height: 80px; resize: none; font-size: 15px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .btn-primary {
+    width: 100%; padding: 15px; background: linear-gradient(135deg, var(--blue), var(--blue-light));
+    color: white; border: none; border-radius: var(--radiusSm);
+    font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 6px;
+    letter-spacing: 0.3px; transition: opacity 0.18s, transform 0.1s;
+  }
+  .btn-primary:hover { opacity: 0.92; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-green {
+    background: linear-gradient(135deg, var(--green), var(--green-light));
+  }
+
+  .auth-link { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text2); }
+  .auth-link a { color: var(--blue); font-weight: 600; cursor: pointer; text-decoration: none; }
+
+  .section-title { font-size: 15px; font-weight: 600; color: var(--text2); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.6px; font-size: 12px; }
+
+  .sensor-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+  .sensor-card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 16px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .sensor-card.full { grid-column: 1 / -1; }
+  .sensor-label { font-size: 11px; font-weight: 600; color: var(--text2); letter-spacing: 0.5px; text-transform: uppercase; }
+  .sensor-value { font-size: 28px; font-weight: 700; }
+  .sensor-unit { font-size: 12px; color: var(--text2); }
+  .sensor-status { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 20px; width: fit-content; }
+  .status-ok { background: var(--green-pale); color: var(--green); }
+  .status-warn { background: #FFF8E1; color: #F57F17; }
+  .status-alert { background: #FFEBEE; color: #C62828; }
+  .sensor-icon { font-size: 22px; }
+
+  .temp .sensor-value { color: #E53935; }
+  .ph .sensor-value { color: var(--teal); }
+  .do .sensor-value { color: var(--blue); }
+  .tds .sensor-value { color: #6D4C41; }
+  .nitrate .sensor-value { color: #8E24AA; }
+
+  .summary-banner {
+    background: linear-gradient(135deg, var(--blue-pale), var(--teal-pale));
+    border: 1px solid #B2DFDB; border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .summary-banner .icon { font-size: 28px; }
+  .summary-banner .info h3 { font-size: 14px; font-weight: 600; color: var(--blue); }
+  .summary-banner .info p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  .add-card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 20px 18px; margin-bottom: 16px;
+  }
+  .add-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--blue); display: flex; align-items: center; gap: 8px; }
+
+  .records-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .records-header h2 { font-size: 16px; font-weight: 600; color: var(--blue); }
+  .badge { background: var(--blue-pale); color: var(--blue); font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); background: var(--white); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%); color: white; }
+  th { padding: 11px 12px; text-align: left; font-weight: 600; font-size: 12px; letter-spacing: 0.3px; white-space: nowrap; }
+  td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--text); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f9fafe; }
+  .fish-tag { display: inline-block; background: var(--blue-pale); color: var(--blue); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .fish-tag.tilapia { background: var(--green-pale); color: var(--green); }
+  .fish-tag.catfish { background: #EDE7F6; color: #4527A0; }
+  .fish-tag.trout { background: var(--teal-pale); color: var(--teal); }
+
+  .profile-card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 20px 18px; margin-bottom: 14px;
+  }
+  .profile-avatar {
+    width: 64px; height: 64px; background: linear-gradient(135deg, var(--blue), var(--teal));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 26px; margin: 0 auto 12px;
+  }
+  .profile-name { text-align: center; font-size: 18px; font-weight: 700; color: var(--text); }
+  .profile-shop { text-align: center; font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .profile-info { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 14px; }
+  .info-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-icon { font-size: 16px; width: 24px; text-align: center; }
+  .info-label { color: var(--text2); font-size: 12px; }
+  .info-val { color: var(--text); font-weight: 500; }
+</style>
+
+<div id="auth-section">
+  <div class="auth-wrap page active" id="page-register">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">🐟</div>
+        <h1>Smart RAS Analytics</h1>
+        <p>Register your farm account</p>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" placeholder="Your name" />
+        </div>
+        <div class="form-group">
+          <label>Shop Name</label>
+          <input type="text" placeholder="Farm / shop name" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" placeholder="Village, District, State" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" placeholder="+91 XXXXXXXXXX" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="email@example.com" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" placeholder="Create password" />
+      </div>
+      <button class="btn-primary btn-green" onclick="showApp()">Register</button>
+      <div class="auth-link">Already have an account? <a onclick="show('page-login')">Login here</a></div>
+    </div>
+  </div>
+
+  <div class="auth-wrap page" id="page-login">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">🐟</div>
+        <h1>Smart RAS Analytics</h1>
+        <p>Login to your farm account</p>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" placeholder="email@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" placeholder="Your password" />
+      </div>
+      <button class="btn-primary" onclick="showApp()">Login</button>
+      <div class="auth-link">New farmer? <a onclick="show('page-register')">Register here</a></div>
+    </div>
+  </div>
+</div>
+
+<div id="app-section" style="display:none;">
+  <div class="app-header">
+    <div class="logo">Smart RAS Analytics <span>Welcome, Rajan Kumar</span></div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+  <nav class="nav-bar">
+    <button class="nav-btn active" onclick="switchTab('tab-dashboard', this)"><span class="icon">📊</span>Dashboard</button>
+    <button class="nav-btn" onclick="switchTab('tab-add', this)"><span class="icon">➕</span>Add Data</button>
+    <button class="nav-btn" onclick="switchTab('tab-records', this)"><span class="icon">📋</span>Records</button>
+    <button class="nav-btn" onclick="switchTab('tab-profile', this)"><span class="icon">👤</span>Profile</button>
+  </nav>
+
+  <div class="content">
+    <div id="tab-dashboard" class="page active">
+      <div class="summary-banner">
+        <div class="icon">🌊</div>
+        <div class="info">
+          <h3>All sensors reading normally</h3>
+          <p>Last updated: Today, 10:45 AM · Tank A · Tilapia</p>
+        </div>
+      </div>
+      <div class="section-title">Water Quality Parameters</div>
+      <div class="sensor-grid">
+        <div class="sensor-card temp">
+          <div class="sensor-icon">🌡️</div>
+          <div class="sensor-label">Temperature</div>
+          <div><span class="sensor-value">27.4</span><span class="sensor-unit"> °C</span></div>
+          <div class="sensor-status status-ok">● Optimal</div>
+        </div>
+        <div class="sensor-card ph">
+          <div class="sensor-icon">⚗️</div>
+          <div class="sensor-label">pH Level</div>
+          <div><span class="sensor-value">7.2</span><span class="sensor-unit"> pH</span></div>
+          <div class="sensor-status status-ok">● Optimal</div>
+        </div>
+        <div class="sensor-card do">
+          <div class="sensor-icon">💧</div>
+          <div class="sensor-label">Dissolved Oxygen</div>
+          <div><span class="sensor-value">6.8</span><span class="sensor-unit"> mg/L</span></div>
+          <div class="sensor-status status-ok">● Good</div>
+        </div>
+        <div class="sensor-card tds">
+          <div class="sensor-icon">🧪</div>
+          <div class="sensor-label">TDS</div>
+          <div><span class="sensor-value">412</span><span class="sensor-unit"> ppm</span></div>
+          <div class="sensor-status status-warn">● Monitor</div>
+        </div>
+        <div class="sensor-card nitrate full">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div class="sensor-icon">🔬</div>
+              <div class="sensor-label">Nitrate</div>
+              <div><span class="sensor-value">18</span><span class="sensor-unit"> mg/L</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div class="sensor-status status-ok" style="margin-left:auto;">● Safe</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:6px;">Safe range: &lt; 40 mg/L</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-add" class="page">
+      <div class="add-card">
+        <h2>🐠 Add Farm Data</h2>
+        <div class="form-group">
+          <label>Fish Type</label>
+          <select>
+            <option value="">Select fish type...</option>
+            <option>Tilapia</option>
+            <option>Catfish</option>
+            <option>Rainbow Trout</option>
+            <option>Salmon</option>
+            <option>Rohu</option>
+            <option>Catla</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Stock Count (fish)</label>
+            <input type="number" placeholder="e.g. 500" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Feeding Amount (kg/day)</label>
+          <input type="number" placeholder="e.g. 2.5" step="0.1" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Feeding Schedule</label>
+          <select>
+            <option value="">Select schedule...</option>
+            <option>Once daily (Morning)</option>
+            <option>Twice daily (Morning & Evening)</option>
+            <option>Three times daily</option>
+            <option>Ad libitum</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Feed Type</label>
+          <input type="text" placeholder="e.g. Pellets, Live feed, Mixture" />
+        </div>
+        <div class="form-group">
+          <label>Notes / Observations</label>
+          <textarea placeholder="Any observations about fish health, behaviour, water changes..."></textarea>
+        </div>
+        <button class="btn-primary btn-green">Save Record</button>
+      </div>
+    </div>
+
+    <div id="tab-records" class="page">
+      <div class="records-header">
+        <h2>Farm Records</h2>
+        <span class="badge">6 entries</span>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <input type="text" placeholder="🔍  Search by fish type or date..." />
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Fish Type</th>
+              <th>Stock</th>
+              <th>Feed (kg)</th>
+              <th>Schedule</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>12 Apr 2026</td><td><span class="fish-tag tilapia">Tilapia</span></td><td>500</td><td>2.5</td><td>2× daily</td></tr>
+            <tr><td>11 Apr 2026</td><td><span class="fish-tag catfish">Catfish</span></td><td>320</td><td>1.8</td><td>Once</td></tr>
+            <tr><td>10 Apr 2026</td><td><span class="fish-tag trout">Trout</span></td><td>450</td><td>3.0</td><td>3× daily</td></tr>
+            <tr><td>09 Apr 2026</td><td><span class="fish-tag tilapia">Tilapia</span></td><td>490</td><td>2.4</td><td>2× daily</td></tr>
+            <tr><td>08 Apr 2026</td><td><span class="fish-tag catfish">Catfish</span></td><td>310</td><td>1.7</td><td>Once</td></tr>
+            <tr><td>07 Apr 2026</td><td><span class="fish-tag">Rohu</span></td><td>600</td><td>4.0</td><td>2× daily</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-profile" class="page">
+      <div class="profile-card">
+        <div class="profile-avatar">👨‍🌾</div>
+        <div class="profile-name">Rajan Kumar</div>
+        <div class="profile-shop">Green Aqua Fish Farm</div>
+        <div class="profile-info">
+          <div class="info-row">
+            <span class="info-icon">📍</span>
+            <div><div class="info-label">Location</div><div class="info-val">Thanjavur, Tamil Nadu</div></div>
+          </div>
+          <div class="info-row">
+            <span class="info-icon">📞</span>
+            <div><div class="info-label">Phone</div><div class="info-val">+91 98765 43210</div></div>
+          </div>
+          <div class="info-row">
+            <span class="info-icon">📧</span>
+            <div><div class="info-label">Email</div><div class="info-val">rajan@greenaquafarm.in</div></div>
+          </div>
+          <div class="info-row">
+            <span class="info-icon">🗓️</span>
+            <div><div class="info-label">Member Since</div><div class="info-val">April 2026</div></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" style="background:linear-gradient(135deg,#C62828,#E53935);" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+  function showApp() {
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('app-section').style.display = 'block';
+  }
+  function logout() {
+    document.getElementById('app-section').style.display = 'none';
+    document.getElementById('auth-section').style.display = 'block';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-login').classList.add('active');
+  }
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#app-section .page').forEach(p => p.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+  }
+</script>
